@@ -28,12 +28,13 @@ export class ExtensionMemoryJobService {
     await Promise.all(users.map((u) => this.generateLocationForUser(u.id)));
   }
 
-  // Hàng ngày — Album
+  // Hàng ngày — Album + cleanup
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateAlbumMemories() {
     this.logger.log('Generating album memories');
     const users = await this.getUsers();
     await Promise.all(users.map((u) => this.generateAlbumForUser(u.id)));
+    await this.cleanupOrphanedMemories();
   }
 
   // Đầu mỗi mùa: 1/3, 1/6, 1/9, 1/12
@@ -300,6 +301,23 @@ export class ExtensionMemoryJobService {
           .execute();
       }
     }
+  }
+
+  // Xóa extension_memory có nativeMemoryId trỏ đến memory đã bị xóa
+  private async cleanupOrphanedMemories() {
+    await (this.db as Kysely<any>)
+      .updateTable('extension_memory as em')
+      .set({ deletedAt: new Date() })
+      .where('em.deletedAt', 'is', null)
+      .where('em.nativeMemoryId', 'is not', null)
+      .whereNotExists((eb) =>
+        eb
+          .selectFrom('memory as m')
+          .select('m.id')
+          .whereRef('m.id', '=', 'em.nativeMemoryId')
+          .where('m.deletedAt', 'is', null),
+      )
+      .execute();
   }
 
   private async getUsers(): Promise<UserRow[]> {

@@ -94,7 +94,7 @@ Hệ thống memory mở rộng hỗ trợ nhiều loại mới ngoài `OnThisDa
 | `season` | Nhóm ảnh theo mùa/năm | Đầu mỗi mùa (1/3, 1/6, 1/9, 1/12) |
 | `custom` | User tự tạo thủ công | Không có job |
 
-**Duplicate check:** Mỗi memory có `_dedupeKey` lưu trong field `data`. Job chạy lại chỉ sync assets, không tạo bản mới.
+**Duplicate check:** Mỗi memory có `_dedupeKey` lưu trong field `data`, kèm expression index `(data->>'_dedupeKey')`. Job chạy lại chỉ sync assets, không tạo bản mới. Hàng ngày cleanup extension_memory có `nativeMemoryId` trỏ đến memory đã bị xóa trên mobile.
 
 **API:**
 ```
@@ -111,13 +111,14 @@ DELETE /api/extensions/memory/:id/assets   # Xóa ảnh
 ```
 server/src/extensions/
 ├── migrations/
-│   └── 0001-CreateExtensionMemory.ts  # Tạo extension_memory + extension_memory_asset
+│   ├── 0001-CreateExtensionMemory.ts  # Tạo extension_memory + extension_memory_asset
+│   └── 0002-AddDedupeKeyIndex.ts       # Expression index cho _dedupeKey
 └── memory/
     ├── extension-memory.dto.ts
     ├── extension-memory.repository.ts
     ├── extension-memory.service.ts
     ├── extension-memory.controller.ts
-    ├── extension-memory-job.service.ts  # Cron jobs generate memory
+    ├── extension-memory-job.service.ts  # Cron jobs generate + cleanup orphans
     └── extension-migrator.service.ts   # Migrator riêng
 ```
 
