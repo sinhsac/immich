@@ -1,54 +1,76 @@
-<p align="center"> 
-  <br/>
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
-  <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
-  </a>
-  <br/>
-  <br/>
-</p>
+# Immich Fork — Bản tùy chỉnh cá nhân
 
-<p align="center">
-<img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
-</p>
-<h3 align="center">High performance self-hosted photo and video management solution</h3>
+> Fork từ [immich-app/immich](https://github.com/immich-app/immich), luôn theo bản **stable mới nhất**. Xem tài liệu gốc tại [immich.app](https://immich.app).
 
 ---
 
-## This Fork
+## Triết lý mở rộng
 
-This is a personal fork of [immich-app/immich](https://github.com/immich-app/immich), based on the stable tag **v2.7.5**.
+Mọi tính năng tùy chỉnh đều theo nguyên tắc **chỉ thêm mới, không sửa code gốc** để việc sync stable mới nhất luôn dễ dàng:
 
-### Upstream Compatibility
+- ✅ Bảng DB mới hoàn toàn — không sửa schema gốc
+- ✅ API endpoint mới trong `server/src/extensions/`
+- ✅ Web route mới trong `web/src/routes/(user)/extensions/`
+- ✅ Sidebar có 1 entry "Extensions" duy nhất — thêm tính năng mới không cần sửa sidebar
+- ⚠️ File gốc bị sửa tối thiểu (chỉ 4 file, mỗi file 2 dòng):
+  - `server/src/controllers/index.ts`
+  - `server/src/services/index.ts`
+  - `web/src/lib/route.ts`
+  - `web/src/lib/components/shared-components/side-bar/user-sidebar.svelte`
 
-- Tracks upstream tag `v2.7.5` — intentionally pinned to a stable release, not `main`
-- Internal code keeps the `immich` namespace for upstream sync compatibility
-- To sync a newer upstream tag: `git fetch immich vX.Y.Z && git reset --hard FETCH_HEAD`, then restore `server/src/controllers/index.ts`, `server/src/services/index.ts`, `web/src/lib/route.ts`, `web/src/lib/components/shared-components/side-bar/user-sidebar.svelte`
+### Sync stable mới nhất
 
-### Extension Philosophy
+```bash
+# 1. Fetch tag mới nhất
+git fetch immich vX.Y.Z
+git reset --hard FETCH_HEAD
 
-All custom features follow an **additive-only** pattern to minimize merge conflicts:
+# 2. Restore 4 file tùy chỉnh
+git checkout origin/develop -- \
+  server/src/controllers/index.ts \
+  server/src/services/index.ts \
+  web/src/lib/route.ts \
+  "web/src/lib/components/shared-components/side-bar/user-sidebar.svelte"
 
-- **New DB tables only** — never modify existing schema
-- **New API endpoints only** — lives under `server/src/extensions/`
-- **New web routes only** — lives under `web/src/routes/(user)/extensions/`
-- **Sidebar** — single "Extensions" entry point, child items added without touching sidebar again
-- **Upstream files modified**: only `server/src/controllers/index.ts`, `server/src/services/index.ts`, `web/src/lib/route.ts`, `web/src/lib/components/shared-components/side-bar/user-sidebar.svelte` (minimal, clearly marked)
+# 3. Kiểm tra extension code còn tương thích không
+#    (chủ yếu là import DB type và MapLibre API)
+pnpm install && pnpm build
+```
 
-### Custom Features
+> Extension code được cô lập hoàn toàn trong `server/src/extensions/` và `web/src/routes/(user)/extensions/`.
+> Khi sync version mới, chỉ cần kiểm tra lại phần extension — code gốc immich không bị ảnh hưởng.
 
-#### 🗺️ Heatmap (`/extensions/heatmap`)
+---
 
-Visualizes photo density by GPS location using a heatmap layer.
+## Tính năng tùy chỉnh
 
-- **Data source**: `asset_exif.latitude` / `asset_exif.longitude` — no new tables needed
-- **API**: `GET /api/extensions/heatmap/points` — returns aggregated lat/lng/count grouped to 3 decimal places
-- **Renderer**: MapLibre GL built-in heatmap layer (uses same map style as immich's `/map` page)
-- **Files**:
-  - `server/src/extensions/heatmap/heatmap.service.ts`
-  - `server/src/extensions/heatmap/heatmap.controller.ts`
-  - `web/src/routes/(user)/extensions/heatmap/+page.ts`
-  - `web/src/routes/(user)/extensions/heatmap/+page.svelte`
+### 🗺️ Bản đồ nhiệt (`/extensions/heatmap`)
+
+Hiển thị mật độ ảnh theo vị trí GPS dưới dạng heatmap.
+
+**Cách hoạt động:**
+- Đọc `latitude` / `longitude` từ bảng `asset_exif` có sẵn — không cần bảng mới
+- Gom nhóm theo 3 chữ số thập phân (~100m) và đếm số ảnh mỗi điểm
+- Render bằng MapLibre GL heatmap layer built-in, dùng cùng map style với trang `/map` của immich
+
+**API:** `GET /api/extensions/heatmap/points`
+```json
+[{ "lat": 10.762, "lng": 106.660, "count": 42 }]
+```
+
+**Files:**
+```
+server/src/extensions/heatmap/
+├── heatmap.service.ts     # Query asset_exif
+└── heatmap.controller.ts  # GET /api/extensions/heatmap/points
+
+web/src/routes/(user)/extensions/
+├── +page.ts               # Extensions index
+├── +page.svelte           # Grid tính năng
+└── heatmap/
+    ├── +page.ts           # Load data
+    └── +page.svelte       # MapLibre heatmap
+```
 
 ---
 <br/>
@@ -79,94 +101,5 @@ Visualizes photo density by GPS location using a heatmap layer.
 </p>
 
 
-> [!WARNING]
-> ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
-> 
- 
-
 > [!NOTE]
-> You can find the main documentation, including installation guides, at https://immich.app/.
-
-## Links
-
-- [Documentation](https://docs.immich.app/)
-- [About](https://docs.immich.app/overview/introduction)
-- [Installation](https://docs.immich.app/install/requirements)
-- [Roadmap](https://immich.app/roadmap)
-- [Demo](#demo)
-- [Features](#features)
-- [Translations](https://docs.immich.app/developer/translations)
-- [Contributing](https://docs.immich.app/overview/support-the-project)
-
-## Demo
-
-Access the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.
-
-### Login credentials
-
-| Email           | Password |
-| --------------- | -------- |
-| demo@immich.app | demo     |
-
-## Features
-
-| Features                                     | Mobile | Web |
-| :------------------------------------------- | ------ | --- |
-| Upload and view videos and photos            | Yes    | Yes |
-| Auto backup when the app is opened           | Yes    | N/A |
-| Prevent duplication of assets                | Yes    | Yes |
-| Selective album(s) for backup                | Yes    | N/A |
-| Download photos and videos to local device   | Yes    | Yes |
-| Multi-user support                           | Yes    | Yes |
-| Album and Shared albums                      | Yes    | Yes |
-| Scrubbable/draggable scrollbar               | Yes    | Yes |
-| Support raw formats                          | Yes    | Yes |
-| Metadata view (EXIF, map)                    | Yes    | Yes |
-| Search by metadata, objects, faces, and CLIP | Yes    | Yes |
-| Administrative functions (user management)   | No     | Yes |
-| Background backup                            | Yes    | N/A |
-| Virtual scroll                               | Yes    | Yes |
-| OAuth support                                | Yes    | Yes |
-| API Keys                                     | N/A    | Yes |
-| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
-| Support 360 degree image display             | No     | Yes |
-| User-defined storage structure               | Yes    | Yes |
-| Public Sharing                               | Yes    | Yes |
-| Archive and Favorites                        | Yes    | Yes |
-| Global Map                                   | Yes    | Yes |
-| Partner Sharing                              | Yes    | Yes |
-| Facial recognition and clustering            | Yes    | Yes |
-| Memories (x years ago)                       | Yes    | Yes |
-| Offline support                              | Yes    | No  |
-| Read-only gallery                            | Yes    | Yes |
-| Stacked Photos                               | Yes    | Yes |
-| Tags                                         | No     | Yes |
-| Folder View                                  | Yes    | Yes |
-
-## Translations
-
-Read more about translations [here](https://docs.immich.app/developer/translations).
-
-<a href="https://hosted.weblate.org/engage/immich/">
-<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
-</a>
-
-## Repository activity
-
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
-
-## Star history
-
-<a href="https://star-history.com/#immich-app/immich&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=date" width="100%" />
- </picture>
-</a>
-
-## Contributors
-
-<a href="https://github.com/immich-app/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
-</a>
+> Tài liệu gốc của immich: https://immich.app/
