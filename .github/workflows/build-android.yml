@@ -1,0 +1,106 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['android-v*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: 'stable'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create keystore
+        working-directory: ./mobile
+        env:
+          KEY_JKS: ${{ secrets.ANDROID_KEY_JKS }}
+        run: |
+          if [ -n "$KEY_JKS" ]; then
+            echo "$KEY_JKS" | base64 -d > android/key.jks
+          fi
+
+      - name: Get dependencies
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Generate translations
+        working-directory: ./mobile
+        run: |
+          dart run easy_localization:generate -S ../i18n
+          dart run bin/generate_keys.dart
+
+      - name: Build APK
+        working-directory: ./mobile
+        env:
+          ALIAS: ${{ secrets.ANDROID_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: immich-android-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Generate QR code
+        run: |
+          APK_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/app-release.apk"
+          pip install qrcode[pil] --quiet
+          python3 -c "
+          import qrcode
+          qr = qrcode.make('$APK_URL')
+          qr.save('qr.png')
+          "
+          echo "APK_URL=$APK_URL" >> $GITHUB_ENV
+
+      - name: Upload QR code
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-code
+          path: qr.png
+          retention-days: 30
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Android ${{ github.ref_name }}
+          files: |
+            mobile/build/app/outputs/flutter-apk/app-release.apk
+            qr.png
+          body: |
+            ## Download
+            Scan QR code below to download APK directly
+
+            ![QR Code](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/qr.png)
+
+            Or download: ${{ env.APK_URL }}
+          draft: false
+          prerelease: true
