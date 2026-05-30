@@ -47,6 +47,10 @@ import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
 import { WorkflowService } from 'src/services/workflow.service';
 import { HeatmapService } from 'src/extensions/heatmap/heatmap.service';
+import { ExtensionMemoryService } from 'src/extensions/memory/extension-memory.service';
+import { ExtensionMemoryRepository } from 'src/extensions/memory/extension-memory.repository';
+import { ExtensionMigratorService } from 'src/extensions/memory/extension-migrator.service';
+import { ExtensionMemoryJobService } from 'src/extensions/memory/extension-memory-job.service';
 
 export const services = [
   ApiKeyService,
@@ -98,4 +102,8 @@ export const services = [
   ViewService,
   WorkflowService,
   HeatmapService,
+  ExtensionMemoryService,
+  ExtensionMemoryRepository,
+  ExtensionMigratorService,
+  ExtensionMemoryJobService,
 ];

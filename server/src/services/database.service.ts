@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import semver from 'semver';
 import { ErrorMessages, EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
+import { ExtensionMigratorService } from 'src/extensions/memory/extension-migrator.service';
 import { BaseService } from 'src/services/base.service';
 import { VectorExtension } from 'src/types';
 
@@ -60,6 +61,9 @@ const messages = {
 
 @Injectable()
 export class DatabaseService extends BaseService {
+  @Inject(ExtensionMigratorService)
+  private extensionMigrator!: ExtensionMigratorService;
+
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
@@ -124,6 +128,9 @@ export class DatabaseService extends BaseService {
       const { database } = this.configRepository.getEnv();
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
+
+        // Run extension migrations
+        await this.extensionMigrator.runMigrations();
 
         this.logger.log('Checking for schema drift');
         const drift = await this.databaseRepository.getSchemaDrift();

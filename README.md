@@ -73,7 +73,55 @@ web/src/routes/(user)/extensions/
 ```
 
 ---
-<br/>
+
+### 🧠 Extension Memory (`/extensions/memory`)
+
+Hệ thống memory mở rộng hỗ trợ nhiều loại mới ngoài `OnThisDay` của immich gốc.
+
+**Kiến trúc dual-write:**
+- Ghi vào bảng `memory` gốc (type = `on_this_day`) → mobile cũ vẫn thấy bình thường
+- Ghi vào bảng `extension_memory` riêng với đầy đủ thông tin type → web hiển thị chi tiết
+- Liên kết 2 bảng qua `nativeMemoryId`
+- Migration riêng dùng bảng `kysely_migrations_ext` — không đụng migration gốc
+
+**Các loại memory:**
+
+| Type | Mô tả | Schedule |
+|------|-------|----------|
+| `location` | Nhóm ảnh theo city/country | Hàng tuần |
+| `person` | Nhóm ảnh theo người được nhận diện | Khi có ảnh mới |
+| `album` | Highlight album theo thời gian | Hàng ngày |
+| `season` | Nhóm ảnh theo mùa/năm | Đầu mỗi mùa (1/3, 1/6, 1/9, 1/12) |
+| `custom` | User tự tạo thủ công | Không có job |
+
+**Duplicate check:** Mỗi memory có `_dedupeKey` lưu trong field `data`. Job chạy lại chỉ sync assets, không tạo bản mới.
+
+**API:**
+```
+GET    /api/extensions/memory          # Tìm kiếm/filter
+GET    /api/extensions/memory/:id      # Chi tiết
+POST   /api/extensions/memory          # Tạo mới (custom)
+PUT    /api/extensions/memory/:id      # Cập nhật
+DELETE /api/extensions/memory/:id      # Xóa mềm
+POST   /api/extensions/memory/:id/assets   # Thêm ảnh
+DELETE /api/extensions/memory/:id/assets   # Xóa ảnh
+```
+
+**Files:**
+```
+server/src/extensions/
+├── migrations/
+│   └── 0001-CreateExtensionMemory.ts  # Tạo extension_memory + extension_memory_asset
+└── memory/
+    ├── extension-memory.dto.ts
+    ├── extension-memory.repository.ts
+    ├── extension-memory.service.ts
+    ├── extension-memory.controller.ts
+    ├── extension-memory-job.service.ts  # Cron jobs generate memory
+    └── extension-migrator.service.ts   # Migrator riêng
+```
+
+---
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
 </a>
