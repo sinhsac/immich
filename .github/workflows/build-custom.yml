@@ -41,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/hotroso/immich-server
+          images: ghcr.io/sinhsac/immich-server
           tags: |
             type=raw,value=latest
             type=semver,pattern={{version}}
