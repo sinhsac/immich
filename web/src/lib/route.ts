@@ -81,6 +81,10 @@ export const Route = {
   // maintenance
   maintenanceMode: (params?: { continue?: string }) => '/maintenance' + asQueryString(params),
 
+  // extensions
+  extensions: () => '/extensions',
+  heatmap: () => '/extensions/heatmap',
+
   // map
   map: (point?: { zoom: number; lat: number; lng: number }) =>
     '/map' + (point ? `#${point.zoom}/${point.lat}/${point.lng}` : ''),

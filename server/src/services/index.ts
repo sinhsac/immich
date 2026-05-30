@@ -46,6 +46,7 @@ import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
 import { WorkflowService } from 'src/services/workflow.service';
+import { HeatmapService } from 'src/extensions/heatmap/heatmap.service';
 
 export const services = [
   ApiKeyService,
@@ -96,4 +97,5 @@ export const services = [
   VersionService,
   ViewService,
   WorkflowService,
+  HeatmapService,
 ];

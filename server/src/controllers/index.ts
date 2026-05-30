@@ -37,6 +37,7 @@ import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
 import { WorkflowController } from 'src/controllers/workflow.controller';
+import { HeatmapController } from 'src/extensions/heatmap/heatmap.controller';
 
 export const controllers = [
   ApiKeyController,
@@ -78,4 +79,5 @@ export const controllers = [
   UserController,
   ViewController,
   WorkflowController,
+  HeatmapController,
 ];

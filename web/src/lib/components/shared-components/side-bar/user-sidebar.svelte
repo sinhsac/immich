@@ -26,6 +26,10 @@
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
+    mdiMapMarkerMultiple,
+    mdiMapMarkerMultipleOutline,
+    mdiPuzzle,
+    mdiPuzzleOutline,
     mdiTagMultipleOutline,
     mdiToolbox,
     mdiToolboxOutline,
@@ -34,6 +38,8 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
+
+  let extensionsExpanded = $state(true);
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
@@ -46,6 +52,14 @@
   {#if featureFlagsManager.value.map}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
   {/if}
+
+  <NavbarItem title="Extensions" href={Route.extensions()} icon={mdiPuzzleOutline} activeIcon={mdiPuzzle} bind:expanded={extensionsExpanded}>
+    {#snippet items()}
+      <span in:fly={{ y: -20 }} class="hidden md:block">
+        <NavbarItem title="Heatmap" href={Route.heatmap()} icon={mdiMapMarkerMultipleOutline} activeIcon={mdiMapMarkerMultiple} />
+      </span>
+    {/snippet}
+  </NavbarItem>
 
   {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
     <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />

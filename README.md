@@ -12,6 +12,45 @@
 <img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">High performance self-hosted photo and video management solution</h3>
+
+---
+
+## This Fork
+
+This is a personal fork of [immich-app/immich](https://github.com/immich-app/immich), based on the stable tag **v2.7.5**.
+
+### Upstream Compatibility
+
+- Tracks upstream tag `v2.7.5` — intentionally pinned to a stable release, not `main`
+- Internal code keeps the `immich` namespace for upstream sync compatibility
+- To sync a newer upstream tag: `git fetch immich vX.Y.Z && git reset --hard FETCH_HEAD`, then restore `server/src/controllers/index.ts`, `server/src/services/index.ts`, `web/src/lib/route.ts`, `web/src/lib/components/shared-components/side-bar/user-sidebar.svelte`
+
+### Extension Philosophy
+
+All custom features follow an **additive-only** pattern to minimize merge conflicts:
+
+- **New DB tables only** — never modify existing schema
+- **New API endpoints only** — lives under `server/src/extensions/`
+- **New web routes only** — lives under `web/src/routes/(user)/extensions/`
+- **Sidebar** — single "Extensions" entry point, child items added without touching sidebar again
+- **Upstream files modified**: only `server/src/controllers/index.ts`, `server/src/services/index.ts`, `web/src/lib/route.ts`, `web/src/lib/components/shared-components/side-bar/user-sidebar.svelte` (minimal, clearly marked)
+
+### Custom Features
+
+#### 🗺️ Heatmap (`/extensions/heatmap`)
+
+Visualizes photo density by GPS location using a heatmap layer.
+
+- **Data source**: `asset_exif.latitude` / `asset_exif.longitude` — no new tables needed
+- **API**: `GET /api/extensions/heatmap/points` — returns aggregated lat/lng/count grouped to 3 decimal places
+- **Renderer**: MapLibre GL built-in heatmap layer (uses same map style as immich's `/map` page)
+- **Files**:
+  - `server/src/extensions/heatmap/heatmap.service.ts`
+  - `server/src/extensions/heatmap/heatmap.controller.ts`
+  - `web/src/routes/(user)/extensions/heatmap/+page.ts`
+  - `web/src/routes/(user)/extensions/heatmap/+page.svelte`
+
+---
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
