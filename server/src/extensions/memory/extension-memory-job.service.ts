@@ -310,7 +310,7 @@ export class ExtensionMemoryJobService {
       .set({ deletedAt: new Date() })
       .where('em.deletedAt', 'is', null)
       .where('em.nativeMemoryId', 'is not', null)
-      .whereNotExists((eb) =>
+      .whereNotExists((eb: any) =>
         eb
           .selectFrom('memory as m')
           .select('m.id')
