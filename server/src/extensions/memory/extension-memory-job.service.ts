@@ -310,11 +310,12 @@ export class ExtensionMemoryJobService {
       .set({ deletedAt: new Date() })
       .where('em.deletedAt', 'is', null)
       .where('em.nativeMemoryId', 'is not', null)
-      .whereNotExists((eb: any) =>
-        eb
+      .where(
+        'em.nativeMemoryId',
+        'not in',
+        (this.db as Kysely<any>)
           .selectFrom('memory as m')
           .select('m.id')
-          .whereRef('m.id', '=', 'em.nativeMemoryId')
           .where('m.deletedAt', 'is', null),
       )
       .execute();
