@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { getAssetThumbnailPath } from '$lib/utils';
+  import { getAssetThumbnailPath } from '@immich/sdk';
   import { Route } from '$lib/route';
   import type { MemoryResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
