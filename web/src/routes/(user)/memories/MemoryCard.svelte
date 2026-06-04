@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailPath } from '$lib/utils';
   import { Route } from '$lib/route';
   import type { MemoryResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -44,7 +44,7 @@
   <div class="relative aspect-[4/3] overflow-hidden">
     {#if coverAsset}
       <img
-        src={getAssetThumbnailUrl(coverAsset.id)}
+        src={getAssetThumbnailPath(coverAsset.id)}
         alt={memory.data?.description ?? 'Memory'}
         class="h-full w-full object-cover transition-transform group-hover:scale-105"
         loading="lazy"
