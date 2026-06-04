@@ -10,8 +10,8 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingSelect from './SettingSelect.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte.js';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte.js';
   import { Button, IconButton, Text } from '@immich/ui';
   import { mdiPlus, mdiTrashCanOutline, mdiTagMultiple } from '@mdi/js';
   import { isEqual } from 'lodash-es';
