@@ -4,7 +4,7 @@
   slideshow-style memory viewer at /memory.
 -->
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { Route } from '$lib/route';
   import type { PageData } from './$types';
