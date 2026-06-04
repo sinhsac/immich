@@ -4,7 +4,6 @@ import { ApiKeyService } from 'src/services/api-key.service';
 import { ApiService } from 'src/services/api.service';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
-import { AuditService } from 'src/services/audit.service';
 import { AuthAdminService } from 'src/services/auth-admin.service';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
@@ -45,12 +44,16 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { WorkflowExecutionService } from 'src/services/workflow-execution.service';
 import { WorkflowService } from 'src/services/workflow.service';
-import { HeatmapService } from 'src/extensions/heatmap/heatmap.service';
-import { ExtensionMemoryService } from 'src/extensions/memory/extension-memory.service';
-import { ExtensionMemoryRepository } from 'src/extensions/memory/extension-memory.repository';
-import { ExtensionMigratorService } from 'src/extensions/memory/extension-migrator.service';
-import { ExtensionMemoryJobService } from 'src/extensions/memory/extension-memory-job.service';
+
+// FORK: Extension services
+import { ExtBootstrapService } from 'src/services/ext-bootstrap.service';
+import { ExtCustomMetadataService } from 'src/services/ext-custom-metadata.service';
+import { ExtMemoryEnrichmentService } from 'src/services/ext-memory-enrichment.service';
+import { ExtPrintExportService } from 'src/services/ext-print-export.service';
+import { ExtSmartAlbumService } from 'src/services/ext-smart-album.service';
+import { ExtStorageAnalyticsService } from 'src/services/ext-storage-analytics.service';
 
 export const services = [
   ApiKeyService,
@@ -59,7 +62,6 @@ export const services = [
   ApiService,
   AssetMediaService,
   AssetService,
-  AuditService,
   AuthService,
   AuthAdminService,
   CliService,
@@ -100,10 +102,13 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  WorkflowExecutionService,
   WorkflowService,
-  HeatmapService,
-  ExtensionMemoryService,
-  ExtensionMemoryRepository,
-  ExtensionMigratorService,
-  ExtensionMemoryJobService,
+  // FORK: Extension services
+  ExtBootstrapService,
+  ExtCustomMetadataService,
+  ExtMemoryEnrichmentService,
+  ExtStorageAnalyticsService,
+  ExtSmartAlbumService,
+  ExtPrintExportService,
 ];

@@ -51,6 +51,7 @@ export const Docs = {
 export const Route = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),
+  logout: (params?: { continue?: string }) => '/auth/logout' + asQueryString(params),
   register: () => '/auth/register',
   changePassword: () => '/auth/change-password',
   onboarding: (params?: { step?: string }) => '/auth/onboarding' + asQueryString(params),
@@ -81,10 +82,6 @@ export const Route = {
   // maintenance
   maintenanceMode: (params?: { continue?: string }) => '/maintenance' + asQueryString(params),
 
-  // extensions
-  extensions: () => '/extensions',
-  heatmap: () => '/extensions/heatmap',
-
   // map
   map: (point?: { zoom: number; lat: number; lng: number }) =>
     '/map' + (point ? `#${point.zoom}/${point.lat}/${point.lng}` : ''),
@@ -108,6 +105,7 @@ export const Route = {
   locked: () => '/locked',
   trash: () => '/trash',
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,
+  recentlyAdded: () => '/recently-added',
 
   // search
   search: (dto?: MetadataSearchDto | SmartSearchDto) => {
@@ -141,6 +139,9 @@ export const Route = {
   viewUser: ({ id }: { id: string }) => `/admin/users/${id}`,
   editUser: ({ id }: { id: string }) => `/admin/users/${id}/edit`,
 
+  // FORK: dedicated memories page
+  memoriesPage: () => '/memories',
+
   // utilities
   utilities: () => '/utilities',
   duplicatesUtility: (params?: { index?: number }) => '/utilities/duplicates' + asQueryString(params),
@@ -148,8 +149,8 @@ export const Route = {
   geolocationUtility: () => '/utilities/geolocation',
 
   // workflows
-  workflows: () => '/utilities/workflows',
-  viewWorkflow: ({ id }: { id: string }) => `/utilities/workflows/${id}`,
+  workflows: () => '/workflows',
+  viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
   // queues
   queues: () => '/admin/queues',

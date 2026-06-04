@@ -1,11 +1,12 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { user } from '$lib/stores/user.store';
+// FORK: Import extension metadata service for enriched memory titles
+import { fetchBulkMemoryMetadata } from '$lib/services/ext-memory-metadata';
 import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { get } from 'svelte/store';
 
 type MemoryIndex = {
   memoryIndex: number;
@@ -31,9 +32,11 @@ class MemoryManager {
     });
 
     // loaded event might have already happened
-    if (get(user)) {
+    if (authManager.authenticated) {
       void this.initialize();
     }
+
+    this.scheduleHourlyRefresh();
   }
 
   ready() {
@@ -132,6 +135,36 @@ class MemoryManager {
   private async load() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
+    // FORK: Pre-fetch enriched metadata for all loaded memories so titles are available immediately
+    if (this.memories.length > 0) {
+      const memoryIds = this.memories.map((m) => m.id);
+      fetchBulkMemoryMetadata(memoryIds).catch((error) =>
+        console.error('[memory-manager] Failed to fetch enriched metadata:', error),
+      );
+    }
+  }
+
+  private scheduleHourlyRefresh() {
+    const now = DateTime.utc();
+    let nextEvent = now.set({ minute: 0, second: 5 });
+
+    if (nextEvent <= now) {
+      nextEvent = nextEvent.plus({ hours: 1 });
+    }
+
+    const initialDelay = nextEvent.diff(now).as('milliseconds');
+
+    setTimeout(() => {
+      this.#loading = this.load();
+
+      // Schedule subsequent events hourly
+      setInterval(
+        () => {
+          this.#loading = this.load();
+        },
+        60 * 60 * 1000,
+      );
+    }, initialDelay);
   }
 }
 

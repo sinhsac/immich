@@ -37,8 +37,13 @@ import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
 import { WorkflowController } from 'src/controllers/workflow.controller';
-import { HeatmapController } from 'src/extensions/heatmap/heatmap.controller';
-import { ExtensionMemoryController } from 'src/extensions/memory/extension-memory.controller';
+
+// FORK: Extension controllers
+import { ExtCustomMetadataController } from 'src/controllers/ext-custom-metadata.controller';
+import { ExtMemoryMetadataController } from 'src/controllers/ext-memory-metadata.controller';
+import { ExtPrintExportController } from 'src/controllers/ext-print-export.controller';
+import { ExtSmartAlbumController } from 'src/controllers/ext-smart-album.controller';
+import { ExtStorageAnalyticsController } from 'src/controllers/ext-storage-analytics.controller';
 
 export const controllers = [
   ApiKeyController,
@@ -80,6 +85,10 @@ export const controllers = [
   UserController,
   ViewController,
   WorkflowController,
-  HeatmapController,
-  ExtensionMemoryController,
+  // FORK: Extension controllers
+  ExtCustomMetadataController,
+  ExtMemoryMetadataController,
+  ExtStorageAnalyticsController,
+  ExtSmartAlbumController,
+  ExtPrintExportController,
 ];

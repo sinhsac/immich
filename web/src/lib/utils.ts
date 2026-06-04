@@ -1,28 +1,31 @@
-import { defaultLang, langs, locales } from '$lib/constants';
+import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+// FORK: Import extension metadata service for enriched memory titles
+import { getCachedMemoryMetadata } from '$lib/services/ext-memory-metadata';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
+import { langs } from '$lib/utils/i18n';
 import {
-  AssetMediaSize,
-  AssetTypeEnum,
-  MemoryType,
-  finishOAuth,
-  getAssetOriginalPath,
-  getAssetPlaybackPath,
-  getAssetThumbnailPath,
-  getBaseUrl,
-  getPeopleThumbnailPath,
-  getUserProfileImagePath,
-  linkOAuthAccount,
-  startOAuth,
-  unlinkOAuthAccount,
-  type AssetResponseDto,
-  type MemoryResponseDto,
-  type PersonResponseDto,
-  type ServerVersionResponseDto,
-  type SharedLinkResponseDto,
-  type UserResponseDto,
+    AssetMediaSize,
+    AssetTypeEnum,
+    MemoryType,
+    finishOAuth,
+    getAssetOriginalPath,
+    getAssetPlaybackPath,
+    getAssetThumbnailPath,
+    getBaseUrl,
+    getPeopleThumbnailPath,
+    getUserProfileImagePath,
+    linkOAuthAccount,
+    startOAuth,
+    unlinkOAuthAccount,
+    type AssetResponseDto,
+    type MemoryResponseDto,
+    type PersonResponseDto,
+    type ServerVersionResponseDto,
+    type SharedLinkResponseDto,
+    type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { init, register, t } from 'svelte-i18n';
@@ -218,7 +221,7 @@ export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkRes
 }
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
@@ -320,6 +323,12 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
+    // FORK: Use enriched title from ext_memory_metadata if available
+    const enriched = getCachedMemoryMetadata(memory.id);
+    if (enriched?.title) {
+      return enriched.title;
+    }
+    // FORK-END: Fall back to default "X years ago" title
     const now = new Date();
     if (memory.type === MemoryType.OnThisDay) {
       return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
